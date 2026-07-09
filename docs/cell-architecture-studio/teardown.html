@@ -1,0 +1,395 @@
+<title>Cell Architecture Studio — How It Works & How to Build It to Scale</title>
+<style>
+  :root {
+    --paper: #F6F9F8;
+    --card: #FFFFFF;
+    --ink: #0E1C1A;
+    --ink-soft: #3A4E4A;
+    --ink-faint: #6C807B;
+    --line: #DDE7E4;
+    --line-soft: #E9F0EE;
+    --teal: #0FA896;
+    --teal-deep: #0A7D70;
+    --amber: #C9821B;
+    --amber-soft: #F6EAD3;
+    --indigo: #5A57C6;
+    --good: #1F9E6B;
+    --warn: #C77A16;
+    --band: #EEF4F2;
+    --shadow: 0 1px 2px rgba(14,28,26,.04), 0 8px 24px -12px rgba(14,28,26,.12);
+    --maxw: 1080px;
+    --readw: 68ch;
+    --serif: "Iowan Old Style","Palatino Linotype","Palatino","Book Antiqua",Georgia,serif;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono: ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0C1514; --card: #121F1D; --ink: #E7F0ED; --ink-soft: #A9BEB9;
+      --ink-faint: #7B928D; --line: #21322F; --line-soft: #1A2725; --teal: #38C8B4;
+      --teal-deep: #2AA391; --amber: #E0A64B; --amber-soft: #2A2416; --indigo: #8E8BE8;
+      --good: #46C58C; --warn: #E0A64B; --band: #101B19;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #F6F9F8; --card: #FFFFFF; --ink: #0E1C1A; --ink-soft: #3A4E4A;
+    --ink-faint: #6C807B; --line: #DDE7E4; --line-soft: #E9F0EE; --teal: #0FA896;
+    --teal-deep: #0A7D70; --amber: #C9821B; --amber-soft: #F6EAD3; --indigo: #5A57C6;
+    --good: #1F9E6B; --warn: #C77A16; --band: #EEF4F2;
+    --shadow: 0 1px 2px rgba(14,28,26,.04), 0 8px 24px -12px rgba(14,28,26,.12);
+  }
+  :root[data-theme="dark"] {
+    --paper: #0C1514; --card: #121F1D; --ink: #E7F0ED; --ink-soft: #A9BEB9;
+    --ink-faint: #7B928D; --line: #21322F; --line-soft: #1A2725; --teal: #38C8B4;
+    --teal-deep: #2AA391; --amber: #E0A64B; --amber-soft: #2A2416; --indigo: #8E8BE8;
+    --good: #46C58C; --warn: #E0A64B; --band: #101B19;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans);
+    font-size: 17px; line-height: 1.62; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  .col { max-width: var(--readw); }
+  a { color: var(--teal-deep); text-underline-offset: 3px; }
+
+  h1,h2,h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; line-height: 1.15;
+    letter-spacing: -.01em; }
+  p { margin: 0 0 1em; color: var(--ink-soft); }
+  strong { color: var(--ink); font-weight: 650; }
+  code { font-family: var(--mono); font-size: .86em; background: var(--band);
+    padding: .12em .38em; border-radius: 5px; color: var(--ink); border: 1px solid var(--line-soft); }
+
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--teal-deep); font-weight: 600; }
+
+  /* HERO */
+  header.hero { border-bottom: 1px solid var(--line); background:
+    radial-gradient(120% 90% at 85% -10%, color-mix(in srgb, var(--teal) 14%, transparent), transparent 60%),
+    var(--paper); }
+  .hero-inner { padding: 76px 0 60px; }
+  .hero h1 { font-size: clamp(34px, 5.4vw, 60px); margin: 18px 0 20px; max-width: 16ch; }
+  .hero .lede { font-size: clamp(18px, 2.3vw, 22px); color: var(--ink-soft); max-width: 60ch; }
+  .hero .lede b { color: var(--ink); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .chip { font-family: var(--mono); font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink-soft); }
+  .chip b { color: var(--teal-deep); font-weight: 600; }
+
+  section { padding: 60px 0; border-bottom: 1px solid var(--line-soft); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .sec-num { font-family: var(--mono); font-size: 13px; color: var(--teal-deep); font-weight: 600;
+    border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
+  h2 { font-size: clamp(25px, 3.4vw, 34px); margin: 6px 0 14px; }
+  h3 { font-size: 19px; margin: 26px 0 8px; color: var(--ink); }
+  .sub { color: var(--ink-faint); font-size: 15px; margin: 0 0 26px; max-width: 62ch; }
+
+  /* generic cards */
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px 20px 18px; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 6px; font-family: var(--sans); font-size: 16px; font-weight: 650;
+    letter-spacing: 0; }
+  .card p { font-size: 14.5px; margin: 0; color: var(--ink-soft); }
+  .card .k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-faint); display: block; margin-bottom: 10px; }
+
+  ul.clean { margin: 0 0 1em; padding-left: 1.15em; }
+  ul.clean li { margin: .32em 0; color: var(--ink-soft); }
+  ul.clean li::marker { color: var(--teal); }
+
+  /* DIAGRAM band */
+  .band { background: var(--band); border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft); }
+  .stack { display: grid; gap: 12px; }
+  .layer { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+  .layer::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: var(--accent, var(--teal)); }
+  .layer .lname { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--accent, var(--teal-deep)); font-weight: 600; }
+  .layer h4 { margin: 4px 0 6px; font-size: 16.5px; font-family: var(--serif); }
+  .layer p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+  .layer .mods { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .layer .mod { font-family: var(--mono); font-size: 11.5px; padding: 3px 8px; border-radius: 6px;
+    background: var(--band); border: 1px solid var(--line-soft); color: var(--ink-soft); }
+  .flowarrow { text-align: center; color: var(--ink-faint); font-size: 13px; font-family: var(--mono); }
+
+  /* TABLES */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 14.5px; min-width: 620px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-soft);
+    vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; background: var(--band); }
+  td { color: var(--ink-soft); }
+  td strong { color: var(--ink); }
+  tr:last-child td { border-bottom: none; }
+  td.mono { font-family: var(--mono); font-size: 12.5px; color: var(--teal-deep); white-space: nowrap; }
+
+  /* TIER cards */
+  .tiers { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .tier { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px;
+    box-shadow: var(--shadow); display: flex; flex-direction: column; }
+  .tier .tlabel { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    font-weight: 600; }
+  .tier.t1 .tlabel { color: var(--teal-deep); }
+  .tier.t2 .tlabel { color: var(--indigo); }
+  .tier.t3 .tlabel { color: var(--amber); }
+  .tier h3 { margin: 8px 0 4px; font-family: var(--serif); font-size: 21px; }
+  .tier .scaleto { font-size: 13px; color: var(--ink-faint); margin: 0 0 14px; font-family: var(--mono); }
+  .tier ul { margin: 0; padding-left: 1.1em; }
+  .tier li { font-size: 14px; color: var(--ink-soft); margin: .35em 0; }
+  .tier li::marker { color: currentColor; }
+  .tier .cap { margin-top: auto; padding-top: 14px; font-size: 12.5px; color: var(--ink-faint);
+    border-top: 1px dashed var(--line); font-family: var(--mono); }
+
+  .callout { border: 1px solid var(--line); border-left: 4px solid var(--amber); background: var(--card);
+    border-radius: 10px; padding: 16px 18px; margin: 22px 0; box-shadow: var(--shadow); }
+  .callout .k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--amber); font-weight: 700; display:block; margin-bottom: 6px; }
+  .callout p { margin: 0; font-size: 14.5px; }
+
+  .pill { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 5px;
+    font-weight: 600; letter-spacing: .03em; }
+  .pill.good { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+  .pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+
+  footer { padding: 40px 0 64px; color: var(--ink-faint); font-size: 13.5px; }
+  footer .col { max-width: 70ch; }
+  .src { font-family: var(--mono); font-size: 12.5px; }
+
+  @media (max-width: 820px) {
+    .g2,.g3,.tiers { grid-template-columns: 1fr; }
+    body { font-size: 16px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity:1; transform:none; } }
+  }
+</style>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Architecture Teardown &amp; Reference Design</div>
+    <h1>Cell Architecture Studio, and how to build one that scales.</h1>
+    <p class="lede">A teardown of the live <b>interactive 3D cell-biology explorer</b> — what it's made of and how it behaves — followed by a reference architecture for building the same class of tool for <b>classrooms and research groups</b> without it falling over at scale.</p>
+    <div class="chips">
+      <span class="chip"><b>React 19</b> + TypeScript</span>
+      <span class="chip"><b>Three.js</b> · react-three-fiber · drei</span>
+      <span class="chip"><b>Vite</b> build</span>
+      <span class="chip">DRACO-compressed <b>GLB</b></span>
+      <span class="chip"><b>/api/tutor</b> LLM endpoint</span>
+      <span class="chip">i18n: EN · DE · ES · ZH</span>
+      <span class="chip">7 specimen models</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap col">
+    <div class="sec-head"><span class="sec-num">01</span><span class="eyebrow">The teardown</span></div>
+    <h2>What the app actually is</h2>
+    <p>Cell Architecture Studio is a single-page web app that renders scientifically-sourced 3D cell models in the browser and lets a learner rotate, cross-section, label, and compare them — with an AI tutor answering questions grounded in whatever organelle they're currently looking at. It's a <strong>client-heavy, asset-heavy, thin-backend</strong> application: nearly all the intelligence lives in the browser bundle, and the only server dependency is a small tutoring endpoint that degrades gracefully to canned answers when it's unavailable.</p>
+    <p>Reading the shipped bundle and the public repo, the specimen library covers <strong>seven cell types</strong> — plant, animal, white blood cell, neuron, epithelial, bacteria, and muscle — each with positioned, labelled organelles, view modes (native material, cross-section, microscope), an animation layer, and a side-by-side comparison workflow.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="col">
+      <div class="sec-head"><span class="sec-num">02</span><span class="eyebrow">Anatomy</span></div>
+      <h2>The five moving parts</h2>
+      <p class="sub">How the running app is organized. Everything above the tutor line ships in the static bundle; only the tutor call leaves the browser.</p>
+    </div>
+    <div class="stack">
+      <div class="layer reveal" style="--accent:var(--teal)">
+        <span class="lname">Render core</span>
+        <h4>3D scene &amp; camera</h4>
+        <p>react-three-fiber wraps Three.js in React components; drei supplies <code>OrbitControls</code>, <code>Environment</code>, <code>Bounds</code>, and <code>Suspense</code>-based loading. The canvas is the default view — the UI is painted over a live WebGL scene, not the other way round.</p>
+        <div class="mods"><span class="mod">WebGL</span><span class="mod">PerspectiveCamera</span><span class="mod">OrbitControls</span><span class="mod">Environment (IBL)</span><span class="mod">instancing</span><span class="mod">LOD</span></div>
+      </div>
+      <div class="flowarrow">▲ reads geometry from ▲</div>
+      <div class="layer reveal" style="--accent:var(--teal-deep)">
+        <span class="lname">Asset pipeline</span>
+        <h4>Compressed models + procedural fallback</h4>
+        <p>Specimens are <code>.glb</code> meshes (several sourced from the NIH 3D print exchange) compressed with <strong>DRACO</strong> and streamed lazily via <code>useGLTF</code> behind a Suspense boundary with a loading overlay. If a model fails or the network is slow, the app falls back to <strong>procedurally generated geometry</strong> so the lesson never shows an empty canvas.</p>
+        <div class="mods"><span class="mod">GLB</span><span class="mod">DRACO decoder</span><span class="mod">useGLTF + preload</span><span class="mod">Suspense overlay</span><span class="mod">procedural fallback</span></div>
+      </div>
+      <div class="flowarrow">▲ positioned &amp; labelled by ▲</div>
+      <div class="layer reveal" style="--accent:var(--indigo)">
+        <span class="lname">Content model</span>
+        <h4>Data-driven organelles &amp; comparisons</h4>
+        <p>Each specimen is a config object: organelle ids, 3D label anchor coordinates (e.g. <code>{nucleus:[.76,.32,.26]}</code>), descriptions, and per-cell comparison metadata. Adding a cell is authoring data + a mesh, not writing new render code — the single most important property for scaling content.</p>
+        <div class="mods"><span class="mod">specimen registry</span><span class="mod">organelle anchors</span><span class="mod">compare mode</span><span class="mod">view modes</span></div>
+      </div>
+      <div class="flowarrow">▲ questioned through ▲</div>
+      <div class="layer reveal" style="--accent:var(--amber)">
+        <span class="lname">AI tutor</span>
+        <h4>Context-grounded Q&amp;A endpoint</h4>
+        <p>The panel POSTs the question <em>plus the current organelle context</em> to <code>/api/tutor</code> with a <strong>9-second AbortController timeout</strong>. The response is validated (<code>answer</code> must be a non-empty string) and tagged <code>source: "api" | "local"</code>. On any failure it returns a <strong>local fallback answer</strong> — the tutor is an enhancement, never a hard dependency.</p>
+        <div class="mods"><span class="mod">POST /api/tutor</span><span class="mod">9s timeout</span><span class="mod">response validation</span><span class="mod">local fallback</span></div>
+      </div>
+      <div class="flowarrow">▲ presented by ▲</div>
+      <div class="layer reveal" style="--accent:var(--teal)">
+        <span class="lname">Shell &amp; i18n</span>
+        <h4>Responsive UI, four languages</h4>
+        <p>Detail panels, prompts, and mastery/progress tracking sit in an overlay UI that reflows across desktop, compact, and mobile breakpoints. Strings are internationalized across <strong>English, German, Spanish, and Chinese</strong>, driven from a translation table rather than hard-coded copy.</p>
+        <div class="mods"><span class="mod">overlay UI</span><span class="mod">EN · DE · ES · ZH</span><span class="mod">progress tracking</span><span class="mod">responsive breakpoints</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap col">
+    <div class="sec-head"><span class="sec-num">03</span><span class="eyebrow">Why it's built this way</span></div>
+    <h2>The design decisions worth copying</h2>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card"><span class="k">Graceful degradation</span><h3>Two independent fallbacks</h3><p>Procedural geometry when a mesh fails; a local answer when the tutor API fails. A lesson in a school with flaky Wi-Fi still works. Copy this — it's the difference between a demo and a classroom tool.</p></div>
+      <div class="card"><span class="k">Thin, stateless backend</span><h3>One tiny endpoint</h3><p>The only server is <code>/api/tutor</code>. No database, no auth, no session state in the critical path. The whole experience is a CDN-served static bundle plus one function — cheap to run and near-impossible to take down.</p></div>
+      <div class="card"><span class="k">Content as data</span><h3>Specimens are config, not code</h3><p>Cells, organelles, and label anchors are declarative objects. A biology contributor can extend the library without touching the render engine — the property that makes the catalogue scalable.</p></div>
+      <div class="card"><span class="k">Credible assets</span><h3>Real scientific models</h3><p>Meshes are sourced from the NIH 3D collection with documented provenance. For an education/research tool, "where did this model come from" is a feature, not a footnote.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="col">
+      <div class="sec-head"><span class="sec-num">04</span><span class="eyebrow">Reference design</span></div>
+      <h2>Building one to scale for students &amp; researchers</h2>
+      <p class="sub">The live app is a great MVP shape. To serve real cohorts and research groups you add three things it doesn't need: an authoring/asset pipeline, a cost- and latency-controlled AI layer, and per-user persistence. Here's the target architecture, layer by layer.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Job</th><th>Recommended approach</th><th>Scales because…</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">Edge / CDN</td><td>Serve the static app &amp; 3D assets close to the learner</td><td>Static SPA on a global CDN; GLB/DRACO + KTX2 textures on object storage behind the same CDN</td><td>3D assets are immutable and cacheable — push bytes to the edge, not through a server</td></tr>
+          <tr><td class="mono">Render client</td><td>Draw &amp; interact with the scene</td><td>react-three-fiber + drei, LOD + instancing, Suspense streaming, procedural fallback</td><td>Rendering cost is the user's GPU, not yours — the browser is your compute tier</td></tr>
+          <tr><td class="mono">Content service</td><td>Deliver specimen &amp; lesson metadata</td><td>Versioned JSON manifests (git-backed or headless CMS) served statically or via a read-only API</td><td>Content is read-mostly; cache aggressively, invalidate on publish</td></tr>
+          <tr><td class="mono">AI tutor</td><td>Context-grounded Q&amp;A</td><td>Serverless function → Claude, with a semantic cache, streaming, per-user rate limits, and the local fallback preserved</td><td>Caching + rate limits keep token spend bounded as users grow</td></tr>
+          <tr><td class="mono">Identity &amp; data</td><td>Accounts, classes, progress, saved work</td><td>Managed auth (SSO / Google / Clever-LTI for schools) + a serverless Postgres for progress &amp; annotations</td><td>Per-user writes are small &amp; sharded by user; the heavy stuff stays static</td></tr>
+          <tr><td class="mono">Research extension</td><td>Bring-your-own data &amp; export</td><td>Upload pipeline (mesh/volumetric import, validation, DRACO/KTX2 transcode), citable exports, shareable scene links</td><td>Turns a viewer into an instrument — the researcher-facing differentiator</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="col">
+      <div class="sec-head"><span class="sec-num">05</span><span class="eyebrow">Grow into it</span></div>
+      <h2>Three tiers, one codebase</h2>
+      <p class="sub">Don't build the institutional version first. Each tier is the previous one plus a bounded set of additions — the client stays the same, the backend grows behind it.</p>
+    </div>
+    <div class="tiers">
+      <div class="tier t1">
+        <span class="tlabel">Tier 1 · MVP</span>
+        <h3>Static explorer</h3>
+        <p class="scaleto">→ handles thousands of anonymous users at near-zero cost</p>
+        <ul>
+          <li>SPA + assets on a CDN</li>
+          <li>Data-driven specimen registry</li>
+          <li>One serverless <code>/api/tutor</code> with semantic cache + local fallback</li>
+          <li>No accounts, no database</li>
+        </ul>
+        <div class="cap">This is roughly where the live app sits.</div>
+      </div>
+      <div class="tier t2">
+        <span class="tlabel">Tier 2 · Classroom</span>
+        <h3>Cohorts &amp; progress</h3>
+        <p class="scaleto">→ serves whole schools, tracks mastery per student</p>
+        <ul>
+          <li>Auth + SSO / LTI (Google Classroom, Clever)</li>
+          <li>Serverless Postgres: users, classes, progress, quiz scores</li>
+          <li>Teacher dashboard &amp; assignable lessons</li>
+          <li>Per-user tutor rate limits &amp; usage caps</li>
+        </ul>
+        <div class="cap">Adds identity + a thin write path.</div>
+      </div>
+      <div class="tier t3">
+        <span class="tlabel">Tier 3 · Research</span>
+        <h3>Bring-your-own science</h3>
+        <p class="scaleto">→ becomes an instrument for labs, not just a textbook</p>
+        <ul>
+          <li>Mesh / volumetric upload &amp; transcode pipeline</li>
+          <li>Custom annotations, measurements, citable exports</li>
+          <li>Shareable scene permalinks &amp; embeds</li>
+          <li>Optional collab (presence, shared camera)</li>
+        </ul>
+        <div class="cap">Adds an asset ingest + collaboration surface.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap col">
+    <div class="sec-head"><span class="sec-num">06</span><span class="eyebrow">Where it breaks</span></div>
+    <h2>The four things that bite at scale</h2>
+    <p class="sub">Everything above is easy to draw. These are the constraints that actually decide whether it holds up.</p>
+
+    <h3>1 · 3D assets are your real payload budget</h3>
+    <p>A rich cell mesh is megabytes even compressed. Ship <strong>DRACO for geometry and KTX2/Basis for textures</strong>, generate <strong>LODs</strong>, lazy-load per specimen behind Suspense, and preload only the next likely model. Budget for the <span class="pill warn">low-end device</span> — a $150 Chromebook or a mid-range phone is the median classroom GPU, not your laptop. Cap texture sizes and polygon counts per LOD accordingly.</p>
+
+    <h3>2 · The AI tutor is where the bill grows</h3>
+    <p>A per-question LLM call is fine for a demo and ruinous for a district. Contain it: a <strong>semantic cache</strong> (identical/similar organelle questions hit the same answer), <strong>streaming</strong> responses so latency feels low, hard <strong>per-user and per-org rate limits</strong>, and — critically — <strong>keep the local fallback</strong> the live app already has, so a cache miss under load degrades instead of failing. Ground answers in the current organelle context to keep prompts short and answers accurate.</p>
+
+    <div class="callout">
+      <span class="k">Recommendation</span>
+      <p>Back the tutor with <strong>Claude</strong> (e.g. a fast model like Claude Haiku 4.5 for cached, high-volume Q&amp;A and a stronger model for open-ended questions). Send the current specimen + organelle as structured context, cap output tokens, and cache on a normalized <code>(specimen, organelle, question)</code> key. When you wire this up, load the <code>claude-api</code> skill for current model IDs, pricing, streaming, and prompt-caching details rather than hard-coding them.</p>
+    </div>
+
+    <h3>3 · Content pipeline decides who can contribute</h3>
+    <p>If adding a specimen means a developer editing TypeScript, your catalogue stalls. Make specimens <strong>authored data</strong> — a manifest schema (organelle ids, label anchors, descriptions, provenance, translations) validated in CI, with meshes run through an automated transcode step. A biologist or grad student should be able to open a PR that adds a cell. This is the same "content as data" property the live app already leans on; institutionalize it.</p>
+
+    <h3>4 · Accessibility &amp; low-bandwidth aren't optional in education</h3>
+    <p>A WebGL-only app excludes screen-reader users and dies on bad networks. Pair every 3D scene with a <strong>text/2D equivalent</strong> (the organelle data you already have makes this cheap), respect <code>prefers-reduced-motion</code>, ensure keyboard navigation of labels, and keep the <span class="pill good">procedural fallback</span> path healthy. For research/institutional use, plan for offline or LMS-embedded delivery.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap col">
+    <div class="sec-head"><span class="sec-num">07</span><span class="eyebrow">Concrete stack</span></div>
+    <h2>A stack you could start tomorrow</h2>
+    <p class="sub">One opinionated set of choices consistent with the teardown. Swap equivalents freely — the shapes matter more than the vendors.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Concern</th><th>Choice</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>App framework</td><td class="mono">React 19 + TypeScript + Vite</td><td>Matches the live app; huge 3D ecosystem</td></tr>
+          <tr><td>3D</td><td class="mono">three.js / react-three-fiber / drei</td><td>LOD, instancing, Suspense streaming built in</td></tr>
+          <tr><td>Asset compression</td><td class="mono">DRACO (geometry) + KTX2/Basis (textures)</td><td>Transcode in CI on model upload</td></tr>
+          <tr><td>Hosting / CDN</td><td class="mono">Static SPA + object storage on a global CDN</td><td>Vercel / Netlify / Cloudflare Pages + R2/S3</td></tr>
+          <tr><td>AI tutor</td><td class="mono">Serverless fn → Claude + semantic cache</td><td>Streaming, rate-limited, local fallback kept</td></tr>
+          <tr><td>Auth</td><td class="mono">Managed auth + SSO / LTI</td><td>Google Classroom &amp; Clever for schools</td></tr>
+          <tr><td>Data</td><td class="mono">Serverless Postgres (Neon / Supabase)</td><td>Progress, annotations, saved scenes</td></tr>
+          <tr><td>Content</td><td class="mono">Git-backed JSON manifests + schema validation</td><td>Or a headless CMS for non-dev authors</td></tr>
+          <tr><td>Verification</td><td class="mono">Playwright visual snapshots</td><td>The live repo already does this — keep it</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap col">
+    <p><strong>How this was assembled.</strong> Findings come from the live app's shipped bundle and CSS (React + react-three-fiber/drei signatures, DRACO decoder, <code>/api/tutor</code> call with a 9s abort + local fallback, EN/DE/ES/ZH i18n strings, NIH 3D asset URLs, plant/animal/bacteria/neuron/muscle/epithelial/white-blood specimen data) cross-checked against the public source repository. The scaling architecture is a recommendation, not a description of the live app's backend, which is not public.</p>
+    <p class="src">Sources — live app: cell-architecture-studio.lanshuagent.com · repo: github.com/cclank/cell-architecture-studio · assets: 3d.nih.gov</p>
+  </div>
+</footer>
+
+<script>
+  // subtle scroll reveal, guarded by reduced-motion
+  if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const io = new IntersectionObserver((es) => {
+      es.forEach(e => { if (e.isIntersecting) { e.target.style.animationPlayState = 'running'; io.unobserve(e.target); } });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(el => { el.style.animationPlayState = 'paused'; io.observe(el); });
+  }
+</script>
