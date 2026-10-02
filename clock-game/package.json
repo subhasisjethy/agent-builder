@@ -1,0 +1,19 @@
+{
+  "name": "clock-quest",
+  "version": "1.0.0",
+  "description": "Clock Quest - a 3D game that teaches kids how to read analog clocks (Three.js).",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --minify --format=iife --target=es2020 --outfile=dist/game.js",
+    "watch": "esbuild src/main.js --bundle --format=iife --target=es2020 --sourcemap --outfile=dist/game.js --watch",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@fontsource/baloo-2": "^5.2.0",
+    "esbuild": "^0.28.2"
+  }
+}

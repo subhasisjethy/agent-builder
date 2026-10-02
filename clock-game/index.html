@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#7fd0ff">
+  <title>Clock Quest – learn to tell the time</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%8F%B0%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app" data-screen="title">
+  <div id="canvasHost"></div>
+
+  <header id="topbar" class="topbar">
+    <button id="btnBack" class="chip icon" aria-label="Go back">←</button>
+    <div id="levelTitle" class="level-title"></div>
+    <div id="pips" class="pips" aria-hidden="true"></div>
+    <div class="grow"></div>
+    <div id="streak" class="chip streak" title="Right answers in a row">🔥 <span>0</span></div>
+    <div id="starTotal" class="chip" title="Stars collected">⭐ <span>0</span></div>
+    <button id="btnSound" class="chip icon" aria-label="Sound effects" aria-pressed="true">🔊</button>
+    <button id="btnVoice" class="chip icon" aria-label="Read aloud" aria-pressed="true">🗣️</button>
+  </header>
+
+  <main id="main" class="main">
+    <!-- The 3D clock is drawn into this box. Dragging happens on it too. -->
+    <div id="clockSpot" class="clock-spot" aria-label="Clock"></div>
+
+    <aside id="side" class="side">
+      <div class="side-head">
+        <div id="mascotSpot" class="mascot-spot" role="img" aria-label="Tock the chick"></div>
+        <div id="bubble" class="bubble" aria-live="polite">
+          <span id="bubbleText"></span>
+          <button id="btnSay" class="say" aria-label="Read this aloud">🔊</button>
+        </div>
+      </div>
+
+      <div class="side-body">
+        <!-- TITLE -->
+        <section id="v-title" class="view">
+          <h1 class="logo"><span>Clock</span> <span class="q">Quest</span></h1>
+          <p class="tagline">Learn to tell the time with Tock!</p>
+          <label class="name-row" id="nameRow">
+            <span>What's your name?</span>
+            <input id="nameInput" maxlength="14" autocomplete="off" spellcheck="false" placeholder="Type here">
+          </label>
+          <div class="btn-col">
+            <button id="btnPlay" class="btn green big">▶ Play</button>
+            <button id="btnFree" class="btn blue">🕹️ Free play</button>
+          </div>
+          <button id="btnReset" class="linkish">Reset progress</button>
+        </section>
+
+        <!-- WORLD MAP -->
+        <section id="v-map" class="view">
+          <h2 id="mapTitle">Pick a world</h2>
+          <div id="mapGrid" class="map-grid"></div>
+        </section>
+
+        <!-- LESSON -->
+        <section id="v-lesson" class="view">
+          <div id="lessonDots" class="dots"></div>
+          <div class="lesson-hint" id="lessonHint"></div>
+          <div class="actions">
+            <button id="btnLessonSkip" class="btn ghost small">Skip lesson</button>
+            <button id="btnLessonNext" class="btn green">Next ▶</button>
+          </div>
+        </section>
+
+        <!-- QUIZ -->
+        <section id="v-quiz" class="view">
+          <div id="qPrompt" class="q-prompt"></div>
+          <div id="qTarget" class="digital big"></div>
+          <div id="qOptions" class="options"></div>
+          <div class="actions">
+            <button id="btnHint" class="btn yellow">💡 Hint</button>
+            <button id="btnCheck" class="btn green">✓ Check</button>
+            <button id="btnNext" class="btn blue">Next ▶</button>
+          </div>
+        </section>
+
+        <!-- RESULTS -->
+        <section id="v-results" class="view">
+          <h2 id="resTitle">Great job!</h2>
+          <div id="resStars" class="res-stars" aria-label="Stars earned"></div>
+          <p id="resText" class="res-text"></p>
+          <div class="actions center">
+            <button id="btnResNext" class="btn green">Next world ▶</button>
+            <button id="btnResAgain" class="btn yellow">↻ Play again</button>
+            <button id="btnResMap" class="btn blue">🗺️ Map</button>
+          </div>
+        </section>
+
+        <!-- FREE PLAY -->
+        <section id="v-sandbox" class="view">
+          <div id="sbDigital" class="digital big"></div>
+          <div id="sbPhrase" class="phrase"></div>
+          <div class="actions">
+            <button id="sbRead" class="btn yellow">🔊 Read it to me</button>
+            <button id="sbNow" class="btn blue">🕒 Real time</button>
+          </div>
+          <div class="toggles">
+            <label><input type="checkbox" id="sbNums"> Minute numbers</label>
+            <label><input type="checkbox" id="sbTicks"> Minute marks</label>
+            <label><input type="checkbox" id="sbWedge"> Colour slice</label>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <div id="nogl" class="nogl" hidden>
+    <h2>Oh no! 😢</h2>
+    <p>This browser can't show 3D graphics (WebGL). Try the latest Chrome, Edge, Firefox or Safari.</p>
+  </div>
+</div>
+<noscript>Clock Quest needs JavaScript to run.</noscript>
+<script src="dist/game.js"></script>
+</body>
+</html>
